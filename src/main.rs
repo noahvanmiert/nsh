@@ -1,7 +1,6 @@
 /*
     Made by Noah Van Miert
     26/12/2022
-
     nsh
 */
 
@@ -20,8 +19,26 @@ fn get_current_dir() -> PathBuf {
     env::current_dir().unwrap()
 }
 
+struct Alias {
+    name: String,
+    command: String
+}
+
 
 fn main() {
+    let mut aliases = Vec::new();
+
+
+    // ==============================
+    // Here you can add aliases
+
+    aliases.push(Alias {
+        name: "ll".to_string(),
+        command: "exa -l --icons".to_string()
+    });
+
+    // ==============================
+
     loop {
         let mut inp: String = String::new();
 
@@ -38,10 +55,24 @@ fn main() {
         io::stdin().read_line(&mut inp).expect("failed to read line");
 
         let mut parts = inp.trim().split_whitespace();
-        let command = parts.next().unwrap();
-        let args = parts;
+        let mut command = parts.next().unwrap();
+        let mut args = parts;
+
+        /*
+            Check if the current command is an
+            alias.
+        */
+        for alias in &aliases {
+            if alias.name == command {
+                let mut alias_parts = alias.command.trim().split_whitespace();
+
+                command = alias_parts.next().unwrap();
+                args = alias_parts;
+            }
+        }
 
         match command {
+
             "cd" => {
                 let new = args.peekable().peek().map_or("/", |x| *x);
                 let root = Path::new(new);
