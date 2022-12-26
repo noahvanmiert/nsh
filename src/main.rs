@@ -23,8 +23,6 @@ fn get_current_dir() -> PathBuf {
 
 fn main() {
     loop {
-
-        
         let mut inp: String = String::new();
 
         /*
@@ -54,15 +52,25 @@ fn main() {
                         Print the error message in bold
                         and red letters.
                     */
-                    eprintln!("\xb1[1;31m{}\x1b[0m", e);
+                    eprintln!("\x1b[1;31m{}\x1b[0m", e);
                 }
             },
+
+            "help" => {
+                println!("Noah Shell (nsh) - version 0.1.0 (linux)");
+                println!("For info about a command use 'man [command]' on linux");
+                println!("\nnsh commands:");
+                println!("\thelp - Prints this help message.");
+                println!("\texit - Will terminate nsh process.");
+            }
             
             /*
                 If you wan't to exit nsh you just
                 say exit and nsh will be terminated.
             */
-            "exit" => return,
+            "exit" => {
+                return
+            }
 
             command => {
                 let child = Command::new(command)
@@ -80,7 +88,7 @@ fn main() {
                             command.
                         */
                         child.wait().expect(
-                            "\x1b[1;31mFailed while executing '{}' command\x1b[0m", command
+                            "\x1b[1;31mFailed while executing a command\x1b[0m"
                         );
                     }
 
