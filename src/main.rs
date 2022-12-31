@@ -11,13 +11,37 @@ use std::process::Command;
 use std::env;
 use std::path::PathBuf;
 use std::path::Path;
+use std::str::SplitWhitespace;
+
 
 /*
-    Returns the current directory.
+    Returns the current path
 */
-fn get_current_dir() -> PathBuf {
+fn get_current_abs_path() -> PathBuf {
     env::current_dir().unwrap()
 }
+
+
+fn get_current_path() -> String {
+    let cwd: PathBuf = get_current_abs_path();
+    let path: String = String::from(cwd.to_string_lossy());
+
+    
+    let home_dir: PathBuf = env::home_dir().unwrap();
+    let home: String = String::from(home_dir.to_string_lossy());
+
+    if path == home {
+        return "~".to_string();
+
+    } else if path.starts_with(home.as_str()) {
+        let cutted_string: String = path[home.len()..].to_string();
+
+        return "~".to_string() + &cutted_string;
+    } else {
+        return path;
+    }
+}
+
 
 struct Alias {
     name: String,
@@ -26,7 +50,7 @@ struct Alias {
 
 
 fn main() {
-    let mut aliases = Vec::new();
+    let mut aliases: Vec<Alias> = Vec::new();
 
 
     // ==============================
@@ -48,15 +72,15 @@ fn main() {
             [<directory>] ->
             int the color green.
         */
-        print!("[\x1b[1;32m{}\x1b[0m] -> \x1b[34m", get_current_dir().display());
+        print!("[\x1b[1;32m{}\x1b[0m] -> \x1b[34m", get_current_path());
         print!("\x1b[0m");
         io::stdout().flush().unwrap();
         
         io::stdin().read_line(&mut inp).expect("failed to read line");
 
-        let mut parts = inp.trim().split_whitespace();
-        let mut command = parts.next().unwrap();
-        let mut args = parts;
+        let mut parts: SplitWhitespace = inp.trim().split_whitespace();
+        let mut command: &str= parts.next().unwrap();
+        let mut args: SplitWhitespace = parts;
 
         /*
             Check if the current command is an
@@ -64,7 +88,7 @@ fn main() {
         */
         for alias in &aliases {
             if alias.name == command {
-                let mut alias_parts = alias.command.trim().split_whitespace();
+                let mut alias_parts: SplitWhitespace = alias.command.trim().split_whitespace();
 
                 command = alias_parts.next().unwrap();
                 args = alias_parts;
@@ -74,8 +98,8 @@ fn main() {
         match command {
 
             "cd" => {
-                let new = args.peekable().peek().map_or("/", |x| *x);
-                let root = Path::new(new);
+                let new: &str= args.peekable().peek().map_or("/", |x| *x);
+                let root: &Path = Path::new(new);
                 
                 if let Err(e) = env::set_current_dir(&root) {
 
